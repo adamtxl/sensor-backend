@@ -1,6 +1,6 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, HTTPException
 from app.models import Location
-from app.crud import add_location, get_locations, get_sensors_by_location, update_location
+from app.crud import add_location, get_locations, get_sensors_by_location, update_location, soft_delete_location
 
 router = APIRouter()
 
@@ -13,6 +13,12 @@ async def create_location(location: Location):
 async def list_locations():
     return await get_locations()
 
+# Admin route to retreive all items including deleted
+@router.get("/admin/locations")
+async def list_all_locations_admin():
+    return await get_locations(include_deleted=True)
+
+
 @router.get("/locations/{location_id}/sensors")
 async def list_sensors_at_location(location_id: int):
     return await get_sensors_by_location(location_id)
@@ -21,3 +27,10 @@ async def list_sensors_at_location(location_id: int):
 async def update_location_info(location_id: int, location: Location):
     await update_location(location_id, location)
     return {"status": "location updated"}
+
+@router.delete("/locations/{location_id}")
+async def delete_location(location_id: int):
+    result = await soft_delete_location(location_id)
+    if result == "UPDATE 0":
+        raise HTTPException(status_code=404, detail="Location not found")
+    return {"status": "location soft-deleted"}

@@ -1,6 +1,6 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, HTTPException
 from app.models import Franchise
-from app.crud import add_franchise, get_franchises, update_franchise
+from app.crud import add_franchise, get_franchises, update_franchise, soft_delete_franchise
 
 router = APIRouter()
 
@@ -17,3 +17,10 @@ async def list_franchises():
 async def update_franchise_info(franchise_id: int, franchise: Franchise):
     await update_franchise(franchise_id, franchise.name)
     return {"status": "franchise updated"}
+
+@router.delete("/franchises/{franchise_id}")
+async def delete_franchise(franchise_id: int):
+    result = await soft_delete_franchise(franchise_id)
+    if result == "UPDATE 0":
+        raise HTTPException(status_code=404, detail="Franchise not found")
+    return {"status": "franchise soft-deleted"}
