@@ -1,6 +1,6 @@
 from fastapi import APIRouter, HTTPException
 from app.models import Location
-from app.crud import add_location, get_locations, get_sensors_by_location, update_location, soft_delete_location
+from app.crud.locations import add_location, get_locations, get_sensors_by_location, update_location, soft_delete_location
 
 router = APIRouter()
 

@@ -1,7 +1,7 @@
 from fastapi import APIRouter
 from typing import List
 from app.models import SensorReading
-from app.crud import insert_sensor_reading, get_sensor_readings
+from app.crud.readings import insert_sensor_reading, get_sensor_readings
 
 router = APIRouter()
 

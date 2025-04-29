@@ -2,7 +2,7 @@ from fastapi import APIRouter, HTTPException
 from typing import Optional
 from datetime import datetime
 from app.models import Sensor
-from app.crud import add_sensor, update_sensor, delete_sensor, get_sensors, soft_delete_sensor
+from app.crud.sensors import add_sensor, update_sensor, get_sensors, soft_delete_sensor
 
 router = APIRouter()
 
@@ -34,7 +34,7 @@ async def list_all_sensors_admin():
     return await get_sensors(include_deleted=True)
 
 @router.delete("/sensors/{sensor_id}")
-async def delete_sensor(sensor_id: str):
+async def soft_delete_sensor(sensor_id: str):
     result = await soft_delete_sensor(sensor_id)
     if result == "UPDATE 0":
         raise HTTPException(status_code=404, detail="Sensor not found")

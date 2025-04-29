@@ -1,6 +1,6 @@
 from fastapi import APIRouter, HTTPException
 from app.models import Franchise
-from app.crud import add_franchise, get_franchises, update_franchise, soft_delete_franchise
+from app.crud.franchises import add_franchise, get_franchises, update_franchise, soft_delete_franchise
 
 router = APIRouter()
 
