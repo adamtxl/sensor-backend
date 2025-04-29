@@ -49,17 +49,19 @@ async def delete_sensor(sensor_id: str):
     return result
 
 
-async def get_sensors(location_id: Optional[int] = None, installed_after: Optional[datetime] = None):
+async def get_sensors(location_id: Optional[int] = None, installed_after: Optional[datetime] = None, include_deleted: bool = False):
     conn = await connect()
-    
+
     base_query = """
         SELECT sensor_id, location_id, description, installed_on
         FROM sensors
-        WHERE is_deleted = FALSE
     """
     filters = []
     values = []
-    
+
+    if not include_deleted:
+        filters.append("is_deleted = FALSE")
+
     if location_id is not None:
         filters.append("location_id = $%d" % (len(values) + 1))
         values.append(location_id)
@@ -94,15 +96,18 @@ async def add_location(location: Location):
     await conn.close()
 
  
-async def get_locations():
+async def get_locations(include_deleted: bool = False):
     conn = await connect()
-    rows = await conn.fetch("""
+    query = """
         SELECT id, name, address, city, state, zip, created_on
         FROM locations
-        WHERE is_deleted = FALSE
-    """)
+    """
+    if not include_deleted:
+        query += " WHERE is_deleted = FALSE"
+    rows = await conn.fetch(query)
     await conn.close()
     return [dict(r) for r in rows]
+
 
 # Admin route to retrieve all items including deleted
 async def get_locations(include_deleted: bool = False):
@@ -173,12 +178,15 @@ async def add_franchise(franchise: Franchise):
     """, franchise.name)
     await conn.close()
 
-async def get_franchises():
+async def get_franchises(include_deleted: bool = False):
     conn = await connect()
-    rows = await conn.fetch("""
+    query = """
         SELECT id, name, created_on
         FROM franchises
-    """)
+    """
+    if not include_deleted:
+        query += " WHERE is_deleted = FALSE"
+    rows = await conn.fetch(query)
     await conn.close()
     return [dict(r) for r in rows]
 

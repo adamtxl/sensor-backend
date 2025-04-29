@@ -24,3 +24,7 @@ async def delete_franchise(franchise_id: int):
     if result == "UPDATE 0":
         raise HTTPException(status_code=404, detail="Franchise not found")
     return {"status": "franchise soft-deleted"}
+
+@router.get("/admin/franchises")
+async def list_all_franchises_admin():
+    return await get_franchises(include_deleted=True)

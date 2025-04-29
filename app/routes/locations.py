@@ -13,10 +13,10 @@ async def create_location(location: Location):
 async def list_locations():
     return await get_locations()
 
-# Admin route to retreive all items including deleted
 @router.get("/admin/locations")
 async def list_all_locations_admin():
     return await get_locations(include_deleted=True)
+
 
 
 @router.get("/locations/{location_id}/sensors")

@@ -26,8 +26,12 @@ async def remove_sensor(sensor_id: str):
     return {"status": "sensor deleted"}
 
 @router.get("/sensors")
-async def list_sensors(location_id: Optional[int] = None, installed_after: Optional[datetime] = None):
+async def list_sensors(location_id: Optional[int] = None, installed_after: Optional[str] = None):
     return await get_sensors(location_id=location_id, installed_after=installed_after)
+
+@router.get("/admin/sensors")
+async def list_all_sensors_admin():
+    return await get_sensors(include_deleted=True)
 
 @router.delete("/sensors/{sensor_id}")
 async def delete_sensor(sensor_id: str):
