@@ -1,7 +1,7 @@
 from app.db import connect
 from app.models import SensorReading, Sensor, Location, Franchise
 from datetime import datetime
-from typing import List
+from typing import List, Optional
 from app.models import Location
 
 # Sensor Readings
@@ -26,10 +26,11 @@ async def get_sensor_readings(sensor_id: str = None):
 async def add_sensor(sensor: Sensor):
     conn = await connect()
     await conn.execute("""
-        INSERT INTO sensors (sensor_id, location, description, installed_on)
+        INSERT INTO sensors (sensor_id, location_id, description, installed_on)
         VALUES ($1, $2, $3, $4)
-    """, sensor.sensor_id, sensor.location, sensor.description, sensor.installed_on)
+    """, sensor.sensor_id, sensor.location_id, sensor.description, sensor.installed_on)
     await conn.close()
+
 
 async def update_sensor(sensor_id: str, sensor: Sensor):
     conn = await connect()
@@ -48,6 +49,40 @@ async def delete_sensor(sensor_id: str):
     return result
 
 
+async def get_sensors(location_id: Optional[int] = None, installed_after: Optional[datetime] = None):
+    conn = await connect()
+    
+    base_query = """
+        SELECT sensor_id, location_id, description, installed_on
+        FROM sensors
+    """
+    filters = []
+    values = []
+    
+    if location_id is not None:
+        filters.append("location_id = $%d" % (len(values) + 1))
+        values.append(location_id)
+
+    if installed_after is not None:
+        filters.append("installed_on >= $%d" % (len(values) + 1))
+        values.append(installed_after)
+
+    if filters:
+        base_query += " WHERE " + " AND ".join(filters)
+
+    rows = await conn.fetch(base_query, *values)
+    await conn.close()
+    return [dict(r) for r in rows]
+
+async def update_sensor(sensor_id: str, sensor: Sensor):
+    conn = await connect()
+    result = await conn.execute("""
+        UPDATE sensors
+        SET location_id = $1, description = $2, installed_on = $3
+        WHERE sensor_id = $4
+    """, sensor.location_id, sensor.description, sensor.installed_on, sensor_id)
+    await conn.close()
+    return result
 
 async def add_location(location: Location):
     conn = await connect()
@@ -82,6 +117,17 @@ async def get_sensors_by_location(location_id: int):
     await conn.close()
     return [dict(r) for r in rows]
 
+async def update_location(location_id: int, location: Location):
+    conn = await connect()
+    result = await conn.execute("""
+        UPDATE locations
+        SET name = $1, address = $2, city = $3, state = $4, zip = $5, franchise_id = $6
+        WHERE id = $7
+    """, location.name, location.address, location.city, location.state, location.zip, location.franchise_id, location_id)
+    await conn.close()
+    return result
+
+
 async def add_franchise(franchise: Franchise):
     conn = await connect()
     await conn.execute("""
@@ -98,3 +144,13 @@ async def get_franchises():
     """)
     await conn.close()
     return [dict(r) for r in rows]
+
+async def update_franchise(franchise_id: int, name: str):
+    conn = await connect()
+    result = await conn.execute("""
+        UPDATE franchises
+        SET name = $1
+        WHERE id = $2
+    """, name, franchise_id)
+    await conn.close()
+    return result
