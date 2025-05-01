@@ -24,3 +24,19 @@ async def get_sensor_readings(sensor_id: Optional[str] = None):
         )
     await conn.close()
     return [dict(r) for r in rows]
+
+async def get_enriched_readings():
+    conn = await connect()
+    rows = await conn.fetch("""
+        SELECT 
+            sr.sensor_id,
+            sr.type,
+            sr.value,
+            sr.timestamp,
+            l.name AS facility
+        FROM sensor_readings sr
+        JOIN sensors s ON sr.sensor_id = s.sensor_id
+        JOIN locations l ON s.location_id = l.id
+    """)
+    await conn.close()
+    return [dict(r) for r in rows]

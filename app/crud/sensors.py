@@ -6,16 +6,16 @@ from typing import Optional
 async def add_sensor(sensor: Sensor):
     conn = await connect()
     await conn.execute("""
-        INSERT INTO sensors (sensor_id, location_id, description, installed_on)
-        VALUES ($1, $2, $3, $4)
-    """, sensor.sensor_id, sensor.location_id, sensor.description, sensor.installed_on)
+        INSERT INTO sensors (sensor_id, location_id, description, installed_on, type)
+        VALUES ($1, $2, $3, $4, $5)
+    """, sensor.sensor_id, sensor.location_id, sensor.description, sensor.installed_on, sensor.type)
     await conn.close()
 
 async def get_sensors(location_id: Optional[int] = None, installed_after: Optional[datetime] = None, include_deleted: bool = False):
     conn = await connect()
 
     base_query = """
-        SELECT sensor_id, location_id, description, installed_on
+        SELECT sensor_id, location_id, description, installed_on, type
         FROM sensors
     """
     filters = []
@@ -43,9 +43,9 @@ async def update_sensor(sensor_id: str, sensor: Sensor):
     conn = await connect()
     result = await conn.execute("""
         UPDATE sensors
-        SET location_id = $1, description = $2, installed_on = $3
-        WHERE sensor_id = $4
-    """, sensor.location_id, sensor.description, sensor.installed_on, sensor_id)
+        SET location_id = $1, description = $2, installed_on = $3, type = $4
+        WHERE sensor_id = $5
+    """, sensor.location_id, sensor.description, sensor.installed_on, sensor.type, sensor_id)
     await conn.close()
     return result
 

@@ -24,3 +24,10 @@ class Location(BaseModel):
 
 class Franchise(BaseModel):
     name: str
+
+class EnrichedReading(BaseModel):
+    sensor_id: str
+    type: str
+    value: float
+    timestamp: datetime
+    facility: str

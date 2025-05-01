@@ -20,7 +20,7 @@ async def modify_sensor(sensor_id: str, sensor: Sensor):
 
 @router.delete("/sensors/{sensor_id}")
 async def remove_sensor(sensor_id: str):
-    result = await delete_sensor(sensor_id)
+    result = await soft_delete_sensor(sensor_id)
     if result == "DELETE 0":
         raise HTTPException(status_code=404, detail="Sensor not found")
     return {"status": "sensor deleted"}
