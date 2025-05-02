@@ -13,6 +13,8 @@ class Sensor(BaseModel):
     location_id: Optional[int] = None  
     description: Optional[str] = None
     installed_on: Optional[datetime] = None
+    display_name: Optional[str] = None
+
 
 class Location(BaseModel):
     name: str

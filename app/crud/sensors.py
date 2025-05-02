@@ -15,7 +15,7 @@ async def get_sensors(location_id: Optional[int] = None, installed_after: Option
     conn = await connect()
 
     base_query = """
-        SELECT sensor_id, location_id, description, installed_on, type
+        SELECT sensor_id, location_id, description, installed_on, type, display_name
         FROM sensors
     """
     filters = []
