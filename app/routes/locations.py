@@ -1,8 +1,16 @@
 from fastapi import APIRouter, HTTPException
 from app.models import Location
-from app.crud.locations import add_location, get_locations, get_sensors_by_location, update_location, soft_delete_location
+from app.crud.locations import (
+    add_location,
+    get_locations,
+    get_sensors_by_location,
+    update_location,
+    soft_delete_location,
+)
+from fastapi import Depends
+from app.auth import verify_token
 
-router = APIRouter()
+router = APIRouter(dependencies=[Depends(verify_token)])
 
 @router.post("/locations")
 async def create_location(location: Location):
@@ -16,8 +24,6 @@ async def list_locations():
 @router.get("/admin/locations")
 async def list_all_locations_admin():
     return await get_locations(include_deleted=True)
-
-
 
 @router.get("/locations/{location_id}/sensors")
 async def list_sensors_at_location(location_id: int):

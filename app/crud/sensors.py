@@ -8,7 +8,7 @@ async def add_sensor(sensor: Sensor):
     await conn.execute("""
         INSERT INTO sensors (sensor_id, location_id, description, installed_on, type)
         VALUES ($1, $2, $3, $4, $5)
-    """, sensor.sensor_id, sensor.location_id, sensor.description, sensor.installed_on, sensor.type)
+    """, sensor.sensor_id, sensor.location_id, sensor.description, sensor.installed_on, sensor.sensor_type)
     await conn.close()
 
 async def get_sensors(location_id: Optional[int] = None, installed_after: Optional[datetime] = None, include_deleted: bool = False):
