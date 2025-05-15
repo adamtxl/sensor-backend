@@ -1,12 +1,18 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from typing import Optional
 from datetime import datetime
+
 
 class SensorReading(BaseModel):
     sensor_id: str
     type: str
     value: float
     timestamp: Optional[datetime] = None
+    rssi: Optional[float] = None
+    snr: Optional[float] = None
+    latitude: Optional[float] = None
+    longitude: Optional[float] = None
+    altitude: Optional[float] = None
 
 class Sensor(BaseModel):
     sensor_id: str
@@ -14,6 +20,7 @@ class Sensor(BaseModel):
     description: Optional[str] = None
     installed_on: Optional[datetime] = None
     display_name: Optional[str] = None
+    sensor_type: str = Field(..., alias="type")
 
 
 class Location(BaseModel):

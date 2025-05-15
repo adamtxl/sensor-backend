@@ -1,10 +1,11 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Depends
 from typing import Optional
 from datetime import datetime
 from app.models import Sensor
+from app.auth import verify_token
 from app.crud.sensors import add_sensor, update_sensor, get_sensors, soft_delete_sensor
 
-router = APIRouter()
+router = APIRouter(dependencies=[Depends(verify_token)])
 
 @router.post("/sensors")
 async def create_sensor(sensor: Sensor):
@@ -19,23 +20,16 @@ async def modify_sensor(sensor_id: str, sensor: Sensor):
     return {"status": "sensor updated"}
 
 @router.delete("/sensors/{sensor_id}")
-async def remove_sensor(sensor_id: str):
+async def soft_delete(sensor_id: str):
     result = await soft_delete_sensor(sensor_id)
-    if result == "DELETE 0":
+    if result == "UPDATE 0":
         raise HTTPException(status_code=404, detail="Sensor not found")
-    return {"status": "sensor deleted"}
+    return {"status": "sensor soft-deleted"}
 
 @router.get("/sensors")
-async def list_sensors(location_id: Optional[int] = None, installed_after: Optional[str] = None):
+async def list_sensors(location_id: Optional[int] = None, installed_after: Optional[datetime] = None):
     return await get_sensors(location_id=location_id, installed_after=installed_after)
 
 @router.get("/admin/sensors")
 async def list_all_sensors_admin():
     return await get_sensors(include_deleted=True)
-
-@router.delete("/sensors/{sensor_id}")
-async def soft_delete_sensor(sensor_id: str):
-    result = await soft_delete_sensor(sensor_id)
-    if result == "UPDATE 0":
-        raise HTTPException(status_code=404, detail="Sensor not found")
-    return {"status": "sensor soft-deleted"}

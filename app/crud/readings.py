@@ -6,24 +6,39 @@ from typing import Optional
 async def insert_sensor_reading(reading: SensorReading):
     conn = await connect()
     await conn.execute("""
-        INSERT INTO sensor_readings (sensor_id, type, value, timestamp)
-        VALUES ($1, $2, $3, $4)
-    """, reading.sensor_id, reading.type, reading.value, reading.timestamp or datetime.utcnow())
+        INSERT INTO sensor_readings 
+            (sensor_id, type, value, timestamp, rssi, snr, latitude, longitude, altitude)
+        VALUES 
+            ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+    """,
+    reading.sensor_id,
+    reading.type,
+    reading.value,
+    reading.timestamp or datetime.utcnow(),
+    reading.rssi,
+    reading.snr,
+    reading.latitude,
+    reading.longitude,
+    reading.altitude)
     await conn.close()
+
 
 async def get_sensor_readings(sensor_id: Optional[str] = None):
     conn = await connect()
     if sensor_id:
-        rows = await conn.fetch(
-            "SELECT sensor_id, type, value, timestamp FROM sensor_readings WHERE sensor_id = $1",
-            sensor_id
-        )
+        rows = await conn.fetch("""
+            SELECT sensor_id, type, value, timestamp, rssi, snr, latitude, longitude, altitude
+            FROM sensor_readings
+            WHERE sensor_id = $1
+        """, sensor_id)
     else:
-        rows = await conn.fetch(
-            "SELECT sensor_id, type, value, timestamp FROM sensor_readings"
-        )
+        rows = await conn.fetch("""
+            SELECT sensor_id, type, value, timestamp, rssi, snr, latitude, longitude, altitude
+            FROM sensor_readings
+        """)
     await conn.close()
     return [dict(r) for r in rows]
+
 
 async def get_enriched_readings():
     conn = await connect()
@@ -33,6 +48,11 @@ async def get_enriched_readings():
             sr.type,
             sr.value,
             sr.timestamp,
+            sr.rssi,
+            sr.snr,
+            sr.latitude,
+            sr.longitude,
+            sr.altitude,
             l.name AS facility
         FROM sensor_readings sr
         JOIN sensors s ON sr.sensor_id = s.sensor_id
@@ -40,3 +60,4 @@ async def get_enriched_readings():
     """)
     await conn.close()
     return [dict(r) for r in rows]
+
